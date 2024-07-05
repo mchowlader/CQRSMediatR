@@ -1,0 +1,6 @@
+@CQRSMediator_HostAddress = http://localhost:5173
+
+GET {{CQRSMediator_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
