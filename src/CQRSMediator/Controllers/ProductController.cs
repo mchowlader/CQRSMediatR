@@ -1,7 +1,6 @@
 ﻿using CQRSMediator.CQRS.Commands;
 using CQRSMediator.CQRS.Queries;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CQRSMediator.Controllers
