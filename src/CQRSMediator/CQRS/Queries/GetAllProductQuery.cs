@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CQRSMediator.CQRS.Queries;
 
-public record GetAllProductQuery : IRequest<IEnumerable<Product>>
+public record GetAllProductQuery(PaginationModel Pagination) : IRequest<PaginationResult<Product>>
 {
-    public class GetAllProductQueryHandler : IRequestHandler<GetAllProductQuery, IEnumerable<Product>>
+    public class GetAllProductQueryHandler : IRequestHandler<GetAllProductQuery, PaginationResult<Product>>
     {
         private ProductContext _context;
 
@@ -15,14 +15,22 @@ public record GetAllProductQuery : IRequest<IEnumerable<Product>>
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> Handle(GetAllProductQuery query, CancellationToken cancellationToken)
+        public async Task<PaginationResult<Product>> Handle(GetAllProductQuery query, CancellationToken cancellationToken)
         {
-            var productList = await _context
-                                    .Products
+            var pagination = query.Pagination;
+            var totalCount = await _context.Products
+                                    .CountAsync(cancellationToken);
+            var products = await _context.Products
                                     .AsNoTracking()
-                                    .ToListAsync();
+                                    .Skip((pagination.PageNumber - 1)*pagination.PageSize)
+                                    .Take(pagination.PageSize)
+                                    .ToListAsync(cancellationToken);
 
-            return productList;
+            return new PaginationResult<Product>
+            {
+                Items = products,
+                TotalCount = totalCount
+            };
         }
     }
 }
