@@ -1,7 +1,8 @@
-﻿using MediatR;
+﻿using CQRSMediator.Context;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CQRSMediator.CQRS.Commands;
+namespace CQRSMediator.CQRS.Commands.ProductCmd;
 
 public record DeleteProductByIdCommand : IRequest<int>
 {
@@ -22,7 +23,7 @@ public class DeleteProductByIdCommandHandler : IRequestHandler<DeleteProductById
         var product = await _context.Products.Where(p => p.Id == command.Id).FirstOrDefaultAsync();
         if (product == null)
         {
-            return default;    
+            return default;
         }
         else
         {

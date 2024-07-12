@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using CQRSMediator.Context;
+using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace CQRSMediator.CQRS.Commands;
+namespace CQRSMediator.CQRS.Commands.ProductCmd;
 
 public record UpdateProductCommand : IRequest<int>
 {
@@ -23,7 +24,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
     public async Task<int> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
     {
         var product = await _context.Products
-                            .Where(p => p.Id ==  command.Id)
+                            .Where(p => p.Id == command.Id)
                             .FirstOrDefaultAsync();
         if (product == null)
         {
@@ -31,7 +32,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         }
         else
         {
-            if(command.Name != null)
+            if (command.Name != null)
             {
                 product.Name = command.Name;
             }

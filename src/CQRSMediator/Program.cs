@@ -1,4 +1,7 @@
 
+using CQRSMediator.Context;
+using CQRSMediator.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CQRSMediator
@@ -13,6 +16,11 @@ namespace CQRSMediator
             // Add services to the container.
             builder.Services.AddMediatR(m => m.RegisterServicesFromAssembly(typeof(Program).Assembly));
             builder.Services.AddDbContext<ProductContext>(option => option.UseSqlServer(connectionString));
+            builder.Services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(connectionString));
+
+            builder.Services.AddIdentity<Users, IdentityRole<int>>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -35,7 +43,6 @@ namespace CQRSMediator
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

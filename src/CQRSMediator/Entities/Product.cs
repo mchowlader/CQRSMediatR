@@ -1,4 +1,4 @@
-﻿namespace CQRSMediator.Models;
+﻿namespace CQRSMediator.Entities;
 
 public class Product
 {

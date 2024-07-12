@@ -1,8 +1,10 @@
-﻿using CQRSMediator.Models;
+﻿using CQRSMediator.Context;
+using CQRSMediator.Entities;
+using CQRSMediator.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CQRSMediator.CQRS.Queries;
+namespace CQRSMediator.CQRS.Queries.ProductQue;
 
 public record GetAllProductQuery(PaginationModel Pagination) : IRequest<PaginationResult<Product>>
 {
@@ -22,7 +24,7 @@ public record GetAllProductQuery(PaginationModel Pagination) : IRequest<Paginati
                                     .CountAsync(cancellationToken);
             var products = await _context.Products
                                     .AsNoTracking()
-                                    .Skip((pagination.PageNumber - 1)*pagination.PageSize)
+                                    .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                                     .Take(pagination.PageSize)
                                     .ToListAsync(cancellationToken);
 

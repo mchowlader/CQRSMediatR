@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace CQRSMediator.Migrations
+namespace CQRSMediator.Migrations.Product
 {
     /// <inheritdoc />
-    public partial class ProductMigrationTable : Migration
+    public partial class ProductTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

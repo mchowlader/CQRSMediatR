@@ -1,8 +1,9 @@
-﻿using CQRSMediator.Models;
+﻿using CQRSMediator.Context;
+using CQRSMediator.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CQRSMediator.CQRS.Queries;
+namespace CQRSMediator.CQRS.Queries.ProductQue;
 
 public record GetProductByIdQuery : IRequest<Product>
 {

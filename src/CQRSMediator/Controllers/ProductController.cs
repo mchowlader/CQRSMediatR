@@ -1,5 +1,6 @@
-﻿using CQRSMediator.CQRS.Commands;
+﻿using CQRSMediator.CQRS.Commands.ProductCmd;
 using CQRSMediator.CQRS.Queries;
+using CQRSMediator.CQRS.Queries.ProductQue;
 using CQRSMediator.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,8 @@ namespace CQRSMediator.Controllers
         [HttpGet("All")]
         public async Task<IActionResult> Get([FromQuery]PaginationModel pagination)
         {
-            return Ok(await _mediator.Send(new GetAllProductQuery(pagination)));
+            var result = await _mediator.Send(new GetAllProductQuery(pagination));
+            return Ok(result);
         }
 
         [HttpGet("Id")]

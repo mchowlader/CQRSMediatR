@@ -1,11 +1,11 @@
-﻿using CQRSMediator.Models;
+﻿using CQRSMediator.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CQRSMediator
+namespace CQRSMediator.Context
 {
     public class ProductContext : DbContext
     {
-        public ProductContext(DbContextOptions options) : base(options)
+        public ProductContext(DbContextOptions<ProductContext> options) : base(options)
         {
         }
 
