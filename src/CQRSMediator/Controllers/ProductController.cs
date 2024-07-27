@@ -12,7 +12,6 @@ namespace CQRSMediator.Controllers
     public class ProductController : ControllerBase
     {
         private IMediator _mediator;
-
         public ProductController(IMediator mediator)
         {
             _mediator = mediator;

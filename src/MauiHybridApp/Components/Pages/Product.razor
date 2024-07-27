@@ -1,0 +1,57 @@
+﻿@page "/Product"
+@using MauiHybridApp.Models
+@using MauiHybridApp.Services
+@inject ApiService _api
+
+<h1>Product List</h1>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>@product.Id</td>
+                    <td>@product.Name</td>
+                    <td>@product.Price</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<ProductDTO>? products = new List<ProductDTO>();
+    int totalCount = 0;
+    bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var data = await _api.GetAsync<ProductResponse>("Product/All");
+            products = data.Items;
+            totalCount = data.TotalCount;
+        }
+        catch (Exception ex)
+        {
+            // Handle the exception (e.g., show an error message)
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

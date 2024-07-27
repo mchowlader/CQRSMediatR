@@ -3,6 +3,8 @@ using CQRSMediator.Context;
 using CQRSMediator.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace CQRSMediator
 {
@@ -12,6 +14,14 @@ namespace CQRSMediator
         {
             var builder = WebApplication.CreateBuilder(args);
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.File("D:/MCH/PetProject/CQRSMediatR/ApplicationLog/Log.txt", 
+                    rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
 
             // Add services to the container.
             builder.Services.AddMediatR(m => m.RegisterServicesFromAssembly(typeof(Program).Assembly));

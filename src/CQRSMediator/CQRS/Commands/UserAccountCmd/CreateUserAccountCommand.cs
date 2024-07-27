@@ -1,15 +1,13 @@
-﻿using Azure;
-using CQRSMediator.Controllers;
+﻿using CQRSMediator.Controllers;
 using CQRSMediator.Entities;
 using CQRSMediator.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CQRSMediator.CQRS.Commands.UserAccountCmd;
 
-public record CreateUserAccountCommand : IRequest<SignUpResponse<Users>>
+public record CreateUserAccountCommand : IRequest<SignResponse<Users>>
 {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
@@ -26,24 +24,22 @@ public record CreateUserAccountCommand : IRequest<SignUpResponse<Users>>
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
-public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountCommand, SignUpResponse<Users>>
+public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountCommand, SignResponse<Users>>
 {
-    private readonly SignInManager<Users> _signInManager;
     private readonly UserManager<Users> _userManager;
-    private readonly ILogger<UserAccountController> _logger;
+    private readonly ILogger<UserAccountCommandHandler> _logger;
 
-    public UserAccountCommandHandler(SignInManager<Users> signInManager, UserManager<Users> userManager, ILogger<UserAccountController> logger)
+    public UserAccountCommandHandler(UserManager<Users> userManager, ILogger<UserAccountCommandHandler> logger)
     {
-        _signInManager = signInManager;
         _userManager = userManager;
         _logger = logger;
     }
-    public async Task<SignUpResponse<Users>> Handle(CreateUserAccountCommand command, CancellationToken cancellationToken)
+    public async Task<SignResponse<Users>> Handle(CreateUserAccountCommand command, CancellationToken cancellationToken)
     {
-        if(command is null)
+        if (command is null)
         {
             _logger.LogWarning("Received null CreateUserAccountCommand.");
-            return new SignUpResponse<Users>
+            return new SignResponse<Users>
             {
                 Data = null,
                 Success = false,
@@ -62,7 +58,7 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
                     LastName = command.LastName,
                     ConcurrencyStamp = string.Empty
                 };
-                return new SignUpResponse<Users>
+                return new SignResponse<Users>
                 {
                     Data = exitingResponse,
                     Success = true,
@@ -71,13 +67,13 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
             }
             else
             {
-               return await UserSignUpAsync(command);
+                return await UserSignUpAsync(command);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message,"An error occures while createing the user.");
-            return new SignUpResponse<Users>
+            _logger.LogError(ex.Message, "An error occures while createing the user.");
+            return new SignResponse<Users>
             {
                 Data = null,
                 Success = false,
@@ -85,7 +81,7 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
             };
         }
     }
-    private async Task<SignUpResponse<Users>> UserSignUpAsync(CreateUserAccountCommand command)
+    private async Task<SignResponse<Users>> UserSignUpAsync(CreateUserAccountCommand command)
     {
         var user = new Users();
         user.Email = command.Email;
@@ -103,11 +99,11 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
             if (userData is null)
             {
                 _logger.LogError($"User created but could not be found by ID: {user.Id}");
-                return new SignUpResponse<Users>
+                return new SignResponse<Users>
                 {
                     Data = null,
                     Success = false,
-                    Message = "User creation succeeded but retrieval failed."
+                    Message = "User creation succeeded but retrieval failed."   
                 };
             }
 
@@ -121,7 +117,7 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
                 ConcurrencyStamp = string.Empty,
             };
 
-            return new SignUpResponse<Users>
+            return new SignResponse<Users>
             {
                 Data = response,
                 Success = true,
@@ -133,7 +129,7 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
             _logger.LogWarning("User creation failed. Error: {0}",
                 string.Join("; ", result.Errors.Select(e => e.Description)));
 
-            return new SignUpResponse<Users>
+            return new SignResponse<Users>
             {
                 Data = null,
                 Success = false,
