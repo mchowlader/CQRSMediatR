@@ -1,0 +1,34 @@
+﻿@page "/ProductCreate"
+@using MauiHybridApp.Models
+@using MauiHybridApp.Services
+@using System.ComponentModel.DataAnnotations
+@inject ApiService _apiService;
+
+<h3>Create Product</h3>
+
+<EditForm Model="@product" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="product.Name" class="form-control" />
+        <ValidationMessage For="@(() => product.Name)"/>
+    </div>
+    <div class="form-group">
+        <label for="price">Price</label>
+        <InputNumber id="price" @bind-Value="product.Price" class="form-control"/>
+        <ValidationMessage For="@(() => product.Price)" />
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</EditForm>
+
+@code {
+    private ProductDTO product = new();
+
+    private async Task HandleValidSubmit()
+    {
+       var result = await _apiService.CreateAsync<ProductDTO>("Product", product);
+    }
+}

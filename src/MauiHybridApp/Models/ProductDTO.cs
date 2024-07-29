@@ -1,9 +1,16 @@
-﻿namespace MauiHybridApp.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MauiHybridApp.Models
 {
     public record ProductDTO
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public int? Id { get; set; }
+
+        [Required(ErrorMessage ="Product name is required.")]
+        public string Name { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage ="Price is required.")]
+        [Range(0, double.MaxValue, ErrorMessage ="Price must be a positive number.")]
         public decimal Price { get; set; }
     }
 

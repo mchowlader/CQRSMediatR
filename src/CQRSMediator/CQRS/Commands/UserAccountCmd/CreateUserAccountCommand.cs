@@ -113,6 +113,7 @@ public class UserAccountCommandHandler : IRequestHandler<CreateUserAccountComman
                 LastName = userData.LastName,
                 UserName = userData.Email,
                 PhoneNumber = userData.PhoneNumber,
+                Email = userData.Email,
                 EmailConfirmed = userData.EmailConfirmed,
                 ConcurrencyStamp = string.Empty,
             };

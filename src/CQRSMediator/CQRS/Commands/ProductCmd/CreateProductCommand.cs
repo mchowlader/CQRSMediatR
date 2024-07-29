@@ -6,7 +6,7 @@ namespace CQRSMediator.CQRS.Commands.ProductCmd;
 
 public record CreateProductCommand : IRequest<int>
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
 }
 
