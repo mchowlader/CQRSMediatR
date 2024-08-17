@@ -1,6 +1,7 @@
 
 using CQRSMediator.Context;
 using CQRSMediator.Entities;
+using CQRSMediator.Helper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ namespace CQRSMediator
             var builder = WebApplication.CreateBuilder(args);
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+            //Configure applciaton log
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File("D:/MCH/PetProject/CQRSMediatR/ApplicationLog/Log.txt", 
@@ -34,6 +36,9 @@ namespace CQRSMediator
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddScoped<IPasswordHash, PasswordHash>();
+            builder.Services.AddScoped<SignInManager<Users>>();
+            builder.Services.AddScoped<UserManager<Users>>();
             builder.Services.AddControllers().AddJsonOptions(option =>
             {
                 option.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -43,6 +48,37 @@ namespace CQRSMediator
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.Configure<IdentityOptions>(opt =>
+            {
+                // Password settings.
+                //opt.Password.RequireDigit = true;
+                //opt.Password.RequireLowercase = true;
+                //opt.Password.RequireNonAlphanumeric = true;
+                //opt.Password.RequireUppercase = true;
+                //opt.Password.RequiredLength = 8;
+                //opt.Password.RequiredUniqueChars = 1;
+
+                // Lockout settings.
+                opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+                opt.Lockout.MaxFailedAccessAttempts = 5;
+                opt.Lockout.AllowedForNewUsers = true;
+
+                // User settings.
+                opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                opt.User.RequireUniqueEmail = true;
+            });
+
+            builder.Services.ConfigureApplicationCookie(opt =>
+            {
+                // Cookie settings
+                opt.Cookie.HttpOnly = true;
+                opt.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+
+                opt.LoginPath = "/api/UserAccount/SignIn";
+                opt.AccessDeniedPath = "/";
+                opt.SlidingExpiration = true;
+            });
 
             var app = builder.Build();
 
@@ -59,6 +95,7 @@ namespace CQRSMediator
         #endif 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

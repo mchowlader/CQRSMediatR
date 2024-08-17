@@ -2,6 +2,7 @@
 using CQRSMediator.Entities;
 using CQRSMediator.Models;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,6 +30,7 @@ namespace CQRSMediator.Controllers
         }
 
         [HttpPost("SignUp")]
+        [AllowAnonymous]
         public async Task<IActionResult> SignUp(CreateUserAccountCommand command)
         {
             if (!ModelState.IsValid)
@@ -65,6 +67,7 @@ namespace CQRSMediator.Controllers
         {
             if (!ModelState.IsValid)
             {
+              
                 _logger.LogWarning("Invalid model state for SignIn data.");
                 return BadRequest(new ApiResponse<Users>(false, "An error occurred during SignIn.", null));
             }

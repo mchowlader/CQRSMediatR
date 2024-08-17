@@ -1,5 +1,5 @@
-﻿using CQRSMediator.Controllers;
-using CQRSMediator.Entities;
+﻿using CQRSMediator.Entities;
+using CQRSMediator.Helper;
 using CQRSMediator.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CQRSMediator.CQRS.Commands.UserAccountCmd;
 
-public record UserSignInCommand : IRequest<SignResponse<Users>>
+public sealed record UserSignInCommand : IRequest<SignResponse<Users>>
 {
     [Required]
     [EmailAddress]
@@ -23,42 +23,64 @@ public class UserSignInCommandHandler : IRequestHandler<UserSignInCommand, SignR
     private readonly SignInManager<Users> _signInManager;
     private readonly UserManager<Users> _userManager;
     private readonly ILogger<UserSignInCommandHandler> _logger;
+    private readonly IPasswordHash _passwordHash;
+    private readonly IHttpContextAccessor _contextAccessor;
 
-    public UserSignInCommandHandler(SignInManager<Users> signInManager, UserManager<Users> userManager, ILogger<UserSignInCommandHandler> logger)
+    public UserSignInCommandHandler(SignInManager<Users> signInManager
+        , UserManager<Users> userManager
+        , ILogger<UserSignInCommandHandler> logger
+        , IPasswordHash passwordHash
+        , IHttpContextAccessor contextAccessor)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _logger = logger;
+        _passwordHash = passwordHash;
+        _contextAccessor = contextAccessor;
     }
+
     public async Task<SignResponse<Users>> Handle(UserSignInCommand command, CancellationToken cancellationToken)
     {
         try
         {
             var user = await _userManager.FindByEmailAsync(command.Email);
-            if (user is not null)
+            if (user is not null && command.Email != null && command.Password != null)
             {
-                var passwordValid = await _signInManager
-                    .PasswordSignInAsync(user, command.Password, command.IsRemember, lockoutOnFailure: false);
-                if (passwordValid is not null)
+                bool verified = _passwordHash.Verify(command.Password, user.PasswordHash!);
+                if(verified)
                 {
-                    _logger.LogInformation("User signed in.");
-
-                    return new SignResponse<Users>
+                    await _signInManager.SignInAsync(user, isPersistent: command.IsRemember);
+                    var currentUser = _contextAccessor.HttpContext?.User;
+                    if(_signInManager.IsSignedIn(currentUser))
                     {
-                        Success = true,
-                        Data = user,
-                        Message = "User signed in successfully."
-                    };
+                        _logger.LogInformation("User signed in Successfully.");
+
+                        return new SignResponse<Users>
+                        {
+                            Success = true,
+                            Data = new Users { UserName = user.UserName, Email = user.Email },
+                            Message = "User signed in successfully."
+                        };
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Sign-in attempt failed unexpectedly.");
+                        return new SignResponse<Users>
+                        {
+                            Success = false,
+                            Data = null,
+                            Message = "Sign-in attempt failed."
+                        };
+                    }
                 }
                 else
                 {
-                    _logger.LogWarning("Invalid Login attempt.");
-
+                    _logger.LogInformation("Try to password match.");
                     return new SignResponse<Users>
                     {
                         Success = false,
                         Data = null,
-                        Message = "Invalid Login attempt."
+                        Message = "Password incorrect!"
                     };
                 }
             }
@@ -68,6 +90,7 @@ public class UserSignInCommandHandler : IRequestHandler<UserSignInCommand, SignR
                 Data = null,
                 Message = "User not found"
             };
+
         }
         catch (Exception ex)
         {

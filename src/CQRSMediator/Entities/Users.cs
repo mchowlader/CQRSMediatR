@@ -6,9 +6,9 @@ namespace CQRSMediator.Entities;
 
 public class Users : IdentityUser<int>
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    //[Key]
+    //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    //public int UserId { get; set; }
 
     [PersonalData]
     public string? FirstName { get; set; }
